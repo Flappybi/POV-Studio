@@ -1,0 +1,12 @@
+.splash-screen{position:fixed;inset:0;z-index:200;background:#f8f9fb;display:grid;place-items:center;animation:splash-exit .22s ease 1.28s forwards}
+.splash-content{display:flex;flex-direction:column;align-items:center;padding:30px;animation:splash-arrive .6s cubic-bezier(.2,.8,.2,1) both}
+.splash-mark{display:flex;align-items:center;justify-content:center;width:112px;height:112px;background:#fff0e8;border-radius:32px;margin-bottom:25px;box-shadow:0 10px 35px #ff74260a}
+.splash-mark .pov-symbol{display:block;width:61px;height:61px;border-width:17px;border-color:#ff7426;border-radius:50%}
+.splash-mark .pov-symbol:after{width:17px;height:26px;left:-17px;bottom:-17px;background:#ff7426;border-radius:0 0 6px 6px}
+.splash-wordmark{font-size:40px;line-height:1.2;font-weight:750;letter-spacing:-1.6px;color:#17202a}.splash-wordmark>span{font-weight:450}.splash-content p{font-size:13px;color:#8692a5;margin-top:10px;letter-spacing:.3px}
+.splash-loader{height:3px;width:90px;overflow:hidden;background:#e8ebef;border-radius:4px;margin-top:35px}.splash-loader>span{display:block;height:100%;width:100%;background:#ff7426;transform-origin:left;animation:splash-progress 1.2s cubic-bezier(.3,.5,.3,1) both}
+@keyframes splash-arrive{from{opacity:0;transform:translateY(15px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes splash-progress{from{transform:scaleX(.03)}to{transform:scaleX(1)}}
+@keyframes splash-exit{to{opacity:0}}
+@media(max-width:560px){.splash-wordmark{font-size:34px}.splash-mark{width:100px;height:100px;border-radius:28px}.splash-content p{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.splash-screen,.splash-content,.splash-loader>span{animation:none}.splash-loader>span{transform:none}}
