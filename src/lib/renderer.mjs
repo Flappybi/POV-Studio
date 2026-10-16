@@ -19,13 +19,13 @@ export async function exportVideo(result, assets, music, onProgress, signal) {
   const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(type => MediaRecorder.isTypeSupported(type));
   if (!mime) throw new Error('WebM export is not supported by your browser.');
   const canvas = document.createElement('canvas'); canvas.width = 1280; canvas.height = 720;
-  drawAd(canvas, assets, result, 0);
+  drawAd(canvas, assets, result, 0,{music});
   if(signal?.aborted)throw new Error('Export canceled.');
   const stream = canvas.captureStream(30); let beat;
   try { beat = music ? await createInstrumental(result,{destination:true,monitor:false}) : null; } catch(error) {stream.getTracks().forEach(track=>track.stop());throw error;}
   if(signal?.aborted){stream.getTracks().forEach(track=>track.stop());beat?.stop();throw new Error('Export canceled.');}
   if (beat?.stream) beat.stream.getAudioTracks().forEach(track => stream.addTrack(track));
-  const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000 });
+  const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000, ...(music?{audioBitsPerSecond:192000}:{}) });
   const chunks = []; let frame; let stopped = false;
   const cleanup = () => { cancelAnimationFrame(frame); stream.getTracks().forEach(track => track.stop()); beat?.stop(); signal?.removeEventListener('abort', abort); };
   let rejectPromise;
@@ -37,7 +37,7 @@ export async function exportVideo(result, assets, music, onProgress, signal) {
     recorder.onerror = () => { stopped = true; cleanup(); reject(new Error('Video recording failed. Try downloading a PNG.')); };
     recorder.onstop = () => { cleanup(); if (!stopped) { downloadBlob(new Blob(chunks, { type: 'video/webm' }), `pov-${result.id}.webm`); resolve(); } };
     recorder.start(250); beat?.play(); const start = performance.now();
-    const render = () => { const seconds = (performance.now() - start) / 1000; drawAd(canvas, assets, result, Math.min(seconds, result.input.duration - .01)); onProgress(Math.min(100, Math.round(seconds / result.input.duration * 100))); if (seconds >= result.input.duration) recorder.stop(); else frame = requestAnimationFrame(render); };
+    const render = () => { const seconds = (performance.now() - start) / 1000; drawAd(canvas, assets, result, Math.min(seconds, result.input.duration - .01),{music}); onProgress(Math.min(100, Math.round(seconds / result.input.duration * 100))); if (seconds >= result.input.duration) recorder.stop(); else frame = requestAnimationFrame(render); };
     frame = requestAnimationFrame(render);
   });
 }

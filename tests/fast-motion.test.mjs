@@ -2,22 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as motion from '../src/lib/motion.mjs';
 
-test('ad edit has 6, 9, or 12 short shots with a stable three-act story',()=>{
+test('ad edit balances deliberate camera shots with three readable story acts',()=>{
  assert.equal(typeof motion.editAt,'function');
- for(const [duration,count] of [[10,6],[15,9],[20,12]]){
-  const seen=new Set();const transitions=new Set();
-  for(let t=0;t<duration;t+=.04){const shot=motion.editAt(duration,t,'Calm');seen.add(shot.id);transitions.add(shot.transition);assert.ok(shot.length<=1.8);assert.equal(shot.act,Math.min(2,Math.floor(t/(duration/3))));}
-  assert.equal(seen.size,count);assert.equal(transitions.size,2);
+ for(const duration of [10,15,20]){
+  const seen=new Set();
+  for(let t=0;t<duration;t+=.04){const shot=motion.editAt(duration,t,'Calm');seen.add(shot.id);assert.ok(shot.length<=4.5);assert.ok(t>=shot.actStart&&t<shot.actEnd);}
+  assert.ok(seen.size>=6);
  }
 });
 
-test('transition combinations are curated by energy, rather than using every effect in each ad',()=>{
- const combinations=[];
- for(const mood of ['Calm','Energetic','Bold']){
-  const types=new Set();for(let t=0;t<15;t+=.1)types.add(motion.editAt(15,t,mood).transition);
-  assert.equal(types.size,2);combinations.push([...types].sort().join(','));
- }
- assert.equal(new Set(combinations).size,3);
+test('calm gives the camera longer to travel while bold retains a faster edit at the same song tempo',()=>{
+ const calm=motion.editTimeline(15,'Calm',96),bold=motion.editTimeline(15,'Bold',96);
+ assert.ok(bold.length>calm.length);assert.equal(calm.at(-1).angle,'hero');assert.equal(bold.at(-1).angle,'hero');
 });
 
 test('perspective camera creates depth rather than only translating a flat rectangle',()=>{

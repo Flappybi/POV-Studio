@@ -15,6 +15,14 @@ test('AMD adapter sends the real schema request and validates returned plan', as
   assert.equal(result.cost, 0.0002);
   assert.equal(result.attempts, 1);
 });
+
+test('approved constants omitted by AMD are supplied by the server without inventing creative copy',async()=>{
+ const raw=demoPlan(input);delete raw.brandName;delete raw.cta;delete raw.claims;let calls=0;
+ const result=await generateAMD(input,config,async()=>{calls++;return answer(raw);});
+ assert.equal(calls,1);assert.equal(result.plan.brandName,input.brand.name);assert.equal(result.plan.cta,input.brand.cta);assert.deepEqual(result.plan.claims,input.brand.claims);assert.equal(result.plan.headline,raw.headline);
+ await assert.rejects(generateAMD(input,config,async()=>answer({...raw,brandName:'Wrong brand'})),/brand name/);
+ const missingCreative={...raw};delete missingCreative.headline;await assert.rejects(generateAMD(input,config,async()=>answer(missingCreative)),/headline/);
+});
 test('retry includes tokens and cost of rejected first response', async () => {
   let calls = 0;
   const valid = demoPlan(input);

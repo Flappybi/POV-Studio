@@ -27,8 +27,9 @@ function triangle(ctx,image,a,b,c){
  ctx.drawImage(image,0,0);ctx.restore();
 }
 function mesh(ctx,image,pose){
- // A modest mesh retains smooth perspective and real-time preview/export.
- const cells=Math.abs(pose.ry)>.4||Math.abs(pose.rx)>.25?3:2;const vertices=[];
+ // Keep tessellation fixed: changing it mid-move makes interior texture jump
+ // even when the projected corners and camera coordinates are continuous.
+ const cells=3;const vertices=[];
  for(let y=0;y<=cells;y++){vertices[y]=[];for(let x=0;x<=cells;x++)vertices[y][x]=point(image,pose,x/cells,y/cells);}
  for(let y=0;y<cells;y++)for(let x=0;x<cells;x++){
   const a=vertices[y][x],b=vertices[y][x+1],c=vertices[y+1][x+1],d=vertices[y+1][x];

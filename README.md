@@ -1,6 +1,6 @@
 # POV Studio — Advertising From Your POV
 
-POV Studio turns a customer story and an approved Brand Kit into a personalized, three-scene motion ad. AMD powers the creative plan and instrumental music direction; the browser renders the uploaded assets and synthesizes the soundtrack.
+POV Studio turns a customer story and an approved Brand Kit into a personalized, three-scene motion ad. AMD powers the creative plan and instrumental music direction; the browser renders the uploaded assets and plays a selected licensed instrumental recording.
 
 The app starts empty. No demo brand, product images, preset stories or local fake AI responses are loaded.
 
@@ -39,7 +39,7 @@ Unknown token prices remain unavailable; the app does not invent cost figures. R
 ## Workflow
 
 1. Open **Brand Kit**. Enter the brand, product, category, price, tagline, CTA, approved facts and colors.
-2. Optionally upload a logo, product photo and background. PNG, JPEG and WebP are supported, up to 650 KB each. Without a background, the renderer uses brand colors.
+2. Optionally upload a logo, product photo and background (PNG, JPEG or WebP, up to 650 KB each). The browser animates the original product photograph in 2D.
 3. Save the Brand Kit. Enter a real customer story and choose time of day, energy and a 10/15/20-second duration.
 4. Create an ad. AMD returns English creative copy, three scenes, music style/BPM and an exact story quotation used as evidence. User-supplied brand names, CTA and facts remain verbatim.
 5. In **Choose your soundtrack**, audition the three instrumental recommendations with a six-second preview, then select **Use track**. The selected track is used by both ad playback and WebM export. You can also seek, mute, rate relevance, and download PNG or the plan/metrics JSON.
@@ -50,20 +50,23 @@ Unknown token prices remain unavailable; the app does not invent cost figures. R
 ## What AMD and the browser each do
 
 - **AMD:** language-model inference for the creative story, scene text, explanation and instrumental direction.
-- **Browser:** a deterministic multi-shot edit, curated zoom/slide/perspective-turn transitions, text fitting, projected product animation, offline instrumental synthesis and video recording.
+- **Browser:** 2D animation of uploaded photos, text fitting, transitions, licensed recording playback, beat-aware shot timing and video recording.
 - **Server:** input validation, response checks, retry after an invalid plan, usage aggregation and optional cost calculation.
 
-Music uses procedural instrumental arrangements with melody, chords, bass and percussion. Three takes follow the existing AMD music direction: layered keys, a plucked groove, and a spacious atmosphere. Each has a different score, timbre and tempo. The chosen take is saved with the ad and included in JSON exports; opening the ad again restores the choice. Auditions stop after six seconds, and switching tracks or starting video playback stops the previous audition. Music is not a downloaded commercial song or an audio model's generated recording. Older saved ads without music direction use the energy preference. A muted player exports without music; the picker explains this state.
+Music uses five bundled instrumental recordings by **Kevin MacLeod**, licensed under **CC BY 4.0**. AMD can recommend three actual recording IDs from the supplied catalog. The app ranks compatible recordings using that direction, the requested Energy and Time of day; users audition and choose the actual song. Calm excludes the driving Cipher recording, Bold prioritizes the energetic part of the catalog, and Energetic excludes Dream Culture. Similar stories can still share recommendations because the bundled library contains five recordings. The recording keeps its original tempo and timbre; AMD does not generate the recording. Clips are stereo 48 kHz / 192 kbps MP3 excerpts, prepared with loudness normalization, then faded to the ad duration. Preview and WebM export use the same decoded recording. Export requests 192 kbps audio; actual encoder output depends on the browser. Failed audio loading is reported, without a synthesized substitute.
+
+The exact three recording keys and selected slot are saved with new ads. Legacy saved ads retain their previous three-song order; opening an older saved ad restores that slot using the new recording catalog. Auditions stop after six seconds, and switching tracks or starting video playback stops the previous audition. Older ads without music direction use the energy preference. Muted exports contain no music or music attribution. Music-enabled videos carry attribution in the footer; keep it when sharing. The picker also offers a downloadable credit, and Studio's JSON includes the actual selected recording metadata and credit. Full provenance, excerpt offsets and modifications are in [public/music/CREDITS.txt](public/music/CREDITS.txt) and [public/music/provenance.json](public/music/provenance.json). License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
 
 ## Quality and practical limits
 
-New creative plans must quote a meaningful exact substring of the original story. The server checks the unchanged brand name, CTA and approved facts, scene count, field limits, music selection and unsupported numeric claims. Invalid plans get one repair attempt; failures are shown instead of replaced with fake demo content.
+New creative plans must quote a meaningful exact substring of the original story. The server supplies approved brand name, CTA and product facts if AMD omits those constants, and rejects explicit changes. It checks scene count, field limits, music selection and unsupported numeric claims. Invalid plans get one repair attempt; failures are shown instead of replaced with fake demo content.
 
 These checks reduce mistakes but do not prove that every sentence is factually correct or relevant. Review the ad before publishing. A relevance rating is subjective feedback, not measured conversion uplift.
 
-The video animates uploaded assets rather than generating footage. The three story acts contain multiple short shots: normally 6 for 10 seconds, 9 for 15 seconds, and 12 for 20 seconds; Bold can add more cuts. Each energy preference selects two complementary transition types. Product photos are projected as textured planes with X/Y/Z rotation and camera depth, with parallax backgrounds and a depth stage. This is 2.5D animation of the supplied image, not a volumetric model or a synthesized view of the product's hidden sides. Visual render/export runs in the browser, not on AMD GPUs. Browser storage is local, not a shared database. Use Chrome or Edge for WebM export.
+The video animates uploaded assets rather than generating footage. The three story acts contain variable-length shots placed on a half-beat grid at the selected recording's published tempo. The sequence draws from six camera moves: a right orbit, a high-angle reveal, a left orbit, a low-angle lift, a detail track and a settled hero shot. Calm allows longer moves; Bold retains a faster rhythm. The final shot lasts at least 1.8 seconds and settles to a still closing pose. Shot count depends on duration, mood and actual recording BPM. Camera paths use easing with zero velocity and acceleration at their endpoints, with no spring rebound or periodic wobble. The scissor window follows the product across the frame, and incoming copy waits for the camera move to clear its space. Morning, Afternoon and Evening change environmental lighting and background exposure while preserving uploaded product colors and brand panels. Energy changes camera amplitude as well as rhythm. All three scene texts are used: opening and closing scene copy appears in the video; copy already present in the headline or CTA is not duplicated as a caption. The product stays a photograph. Animation changes its position, scale and tilt together with the ad layout, background and text. It does not reconstruct hidden product surfaces or generate new footage. Preview and video export use the same 2D canvas renderer.
 
-Browsers without OffscreenCanvas use a single affine plane as a compatibility fallback, retaining depth-scaled movement and tilt while avoiding transparency seams.
+Older saved ads retain their photographs, copy and soundtrack. Retired model selections are ignored, and the old model-only database is removed on startup. Brand Kit, image assets and saved ads are kept separately. The app starts empty and supports typography-only ads without a product photo. Use Chrome or Edge for WebM export and keep the tab active while recording; actual frame rate depends on the device.
 
 ## Production build
 
@@ -91,3 +94,5 @@ For a public host, set APP_ORIGIN to its exact HTTPS origin. Container packaging
 Demonstrate at least two real customer stories using the same brand, showing how the message and music change while brand assets and approved facts stay consistent. Explain the AMD inference path, browser rendering, actual response time/token usage, and cost only when verified. Include real user feedback with sample size; do not claim improved sales without evidence.
 
 Before submitting, publish the authorized repository and working app, check event eligibility and license requirements, and prepare the pitch/demo video. These are submission tasks, not automatic actions of this app.
+
+Changing **Your story** or **Ad preferences** creates an unapplied draft. The app marks the visible ad as the previous version and offers **Create updated ad**. A new AMD request applies the story and preferences; typing does not silently regenerate or overwrite saved ads. Applied time, energy and duration are displayed above the player.

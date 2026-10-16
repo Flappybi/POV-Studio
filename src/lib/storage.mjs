@@ -21,3 +21,10 @@ export function readImage(file) {
     reader.onload = () => { const img = new Image(); img.onload = () => resolve(reader.result); img.onerror = () => reject(new Error('The image file is damaged or invalid.')); img.src = reader.result; }; reader.readAsDataURL(file);
   });
 }
+
+// This database was used exclusively by the removed GLB feature. Photos,
+// Brand Kit and ad history live separately and are preserved.
+export function clearRetiredModelStorage() {
+  if (!globalThis.indexedDB) return;
+  try { const request = indexedDB.deleteDatabase('pov-studio-assets-v1'); request.onerror = () => {}; } catch {}
+}

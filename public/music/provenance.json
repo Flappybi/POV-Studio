@@ -1,0 +1,52 @@
+[
+  {
+    "key": "carefree",
+    "title": "Carefree",
+    "bpm": 96,
+    "isrc": "USUAN1400037",
+    "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
+    "excerptStart": 7.85,
+    "duration": 28,
+    "bytes": 673871
+  },
+  {
+    "key": "dream-culture",
+    "title": "Dream Culture",
+    "bpm": 70,
+    "isrc": "USUAN1300046",
+    "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dream%20Culture.mp3",
+    "excerptStart": 16.35,
+    "duration": 28,
+    "bytes": 673844
+  },
+  {
+    "key": "cipher",
+    "title": "Cipher",
+    "bpm": 150,
+    "isrc": "USUAN1100844",
+    "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cipher2.mp3",
+    "excerptStart": 24.03,
+    "duration": 28,
+    "bytes": 673835
+  },
+  {
+    "key": "wallpaper",
+    "title": "Wallpaper",
+    "bpm": 92,
+    "isrc": "USUAN1100843",
+    "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Wallpaper.mp3",
+    "excerptStart": 15.9261,
+    "duration": 28,
+    "bytes": 673809
+  },
+  {
+    "key": "airport-lounge",
+    "title": "Airport Lounge",
+    "bpm": 129,
+    "isrc": "USUAN1100806",
+    "source": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airport%20Lounge.mp3",
+    "excerptStart": 16.007,
+    "duration": 28,
+    "bytes": 673822
+  }
+]

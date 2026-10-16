@@ -4,8 +4,26 @@ import {drawAd} from '../src/lib/renderer.mjs';
 import {fitCopy} from '../src/lib/motion.mjs';
 const brand={name:'BRAND UJI',product:'Produk uji',tagline:'Pesan utama',cta:'Lihat produk',price:'Rp 100.000',colors:['#173f35','#fff4df','#c96b3d']};
 const result={input:{brand,duration:15,mood:'Calm'},plan:{headline:'Awal ceritamu',supporting:'Pesan relevan',scenes:[{text:'Awal'},{text:'Momen yang berarti'},{text:'Akhir'}],cta:brand.cta}};
-function render(time,ratio=1,value=result){const calls=[];const noop=()=>{};const ctx=new Proxy({font:'700 20px Arial'},{get:(target,key)=>key==='font'?target.font:key==='createLinearGradient'||key==='createRadialGradient'?()=>({addColorStop:noop}):key==='measureText'?text=>({width:[...text].reduce((sum,c)=>sum+(c==='W'?.95:.6),0)*parseFloat(target.font.split(' ')[1])}):(...args)=>calls.push([key,...args])});drawAd({width:1280,height:720,getContext:()=>ctx},{shoe:{width:500*ratio,height:500},background:null,logo:null},value,time);return calls;}
+function render(time,ratio=1,value=result,options){const calls=[];const noop=()=>{};const ctx=new Proxy({font:'700 20px Arial'},{get:(target,key)=>key==='font'?target.font:key==='createLinearGradient'||key==='createRadialGradient'?()=>({addColorStop:noop}):key==='measureText'?text=>({width:[...text].reduce((sum,c)=>sum+(c==='W'?.95:.6),0)*parseFloat(target.font.split(' ')[1])}):(...args)=>calls.push([key,...args])});drawAd({width:1280,height:720,getContext:()=>ctx},{shoe:{width:500*ratio,height:500},background:null,logo:null},value,time,options);return calls;}
+
+test('selected music attribution is rendered only when music is enabled',()=>{
+ const value={...result,musicChoice:'groove',soundtrackKeys:['carefree','airport-lounge','dream-culture']};
+ const credits=options=>render(12,1,value,options).filter(c=>c[0]==='fillText'&&c[1].startsWith('Music:'));
+ assert.match(credits({music:true})[0][1],/Airport Lounge.*Kevin MacLeod.*CC BY 4.0.*creativecommons.org\/licenses\/by\/4.0.*edited excerpt/);
+ assert.equal(credits({music:false}).length,0);
+});
 test('CTA only appears in closing scene',()=>{for(const time of [1,6])assert.ok(!render(time).some(c=>c[0]==='fillText'&&c[1]===brand.cta));assert.ok(render(12).some(c=>c[0]==='fillText'&&c[1]===brand.cta));});
+test('opening and closing scene copy from the story actually reaches the video',()=>{
+ const value=structuredClone(result);value.plan.scenes[0].text='Sketchbook moment';value.plan.scenes[2].text='Carry your creative plans';
+ const text=time=>render(time,1,value).filter(c=>c[0]==='fillText').map(c=>c[1]).join(' ');
+ assert.match(text(2),/Sketchbook moment/);assert.match(text(12),/Carry your creative plans/);
+});
+test('a scene repeated in the headline or CTA is shown once rather than duplicated as a caption',()=>{
+ const value=structuredClone(result);value.plan.scenes[0].text=value.plan.headline+'.';value.plan.scenes[2].text=value.plan.cta+'.';
+ const texts=time=>render(time,1,value).filter(c=>c[0]==='fillText').map(c=>c[1]);
+ assert.ok(!texts(2).includes(value.plan.scenes[0].text));assert.ok(texts(2).includes(value.plan.supporting));
+ assert.ok(!texts(12).includes(value.plan.scenes[2].text));assert.ok(texts(12).includes(value.plan.cta));
+});
 function vertices(calls){const start=calls.findIndex(c=>c[0]==='rect'&&c[3]===632&&c[4]===538);return calls.slice(start).filter(c=>['moveTo','lineTo'].includes(c[0])).map(c=>({x:c[1],y:c[2]}));}
 test('product uses large independent space and changes composition',()=>{const first=vertices(render(1));const second=vertices(render(6));assert.ok(Math.max(...first.map(p=>p.x))-Math.min(...first.map(p=>p.x))>=400);assert.ok(first[0].x>second[0].x+300);});
 test('product perspective changes within an individual scene',()=>{assert.notDeepEqual(render(1).find(c=>c[0]==='transform'),render(2).find(c=>c[0]==='transform'));});
@@ -27,9 +45,10 @@ test('scene transitions draw one product and never overlay outgoing and incoming
 });
 
 test('product position remains continuous across scene boundaries',()=>{
+ const productTransform=time=>{const calls=render(time);const start=calls.findIndex(c=>c[0]==='rect'&&c[3]===632&&c[4]===538);return calls.slice(start).find(c=>c[0]==='transform');};
  for(const boundary of [5,10]){
-  const before=render(boundary-.00001).find(c=>c[0]==='transform');
-  const after=render(boundary+.00001).find(c=>c[0]==='transform');
+  const before=productTransform(boundary-.00001);
+  const after=productTransform(boundary+.00001);
   assert.ok(Math.hypot(before[5]-after[5],before[6]-after[6])<.5,'product must not teleport between camera targets');
  }
 });

@@ -6,6 +6,13 @@ test('new application starts without sample brand or photos',()=>{
  assert.equal(defaultBrand.name,'');assert.equal(defaultBrand.product,'');
  assert.equal(defaultBrand.productImage,'');assert.equal(defaultBrand.backgroundImage,'');assert.deepEqual(defaultBrand.claims,[]);
 });
+
+test('older ads with retired 3D selections keep their photo and copy in 2D mode',()=>{
+ const value=input();value.brand.productImage='data:image/png;base64,AA==';value.brand.productModel={kind:'uploaded',id:'12345678-1234-1234-1234-123456789012',name:'product.glb',rotation:180};
+ const normalized=validateInput(value);assert.equal(normalized.brand.productModel,undefined);assert.equal(normalized.brand.productImage,value.brand.productImage);assert.deepEqual(normalized.brand.claims,value.brand.claims);
+ const saved={id:'previous-ad',input:value,plan:plan(value),mode:'amd',model:'test-model',createdAt:'2026-10-16T00:00:00Z',generationMs:5,rating:null,cost:null,usage:null};
+ const restored=validHistory([saved]);assert.equal(restored.length,1);assert.equal(restored[0].input.brand.productModel,undefined);assert.equal(restored[0].plan.headline,saved.plan.headline);
+});
 test('rejects blank stories, oversized input and unsupported durations',()=>{
  assert.throws(()=>validateInput(input(' ')),/story/i);assert.throws(()=>validateInput(input('x'.repeat(501))),/500/);
  assert.throws(()=>validateInput({...input(),duration:1}),/duration/i);
