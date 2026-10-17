@@ -78,6 +78,18 @@ npm start
 
 The server serves `dist/` in production.
 
+## Netlify deployment
+
+Deploy the repository with the root `netlify.toml`, not by uploading `dist` alone. Netlify builds the Vite frontend and bundles `netlify/functions/api.mjs`. Its custom `/api/*` route handles both `/api/status` and `/api/generate` using the existing AMD provider and plan validation. Local development continues to use Express.
+
+In Netlify's **Project configuration > Environment variables**, set `AMD_BASE_URL`, `AMD_API_KEY` and `AMD_MODEL` for the **Functions** scope and the deploy context you are publishing. Keep only the API key marked as a secret. The endpoint and model are public configuration, not credentials. Do not create `VITE_AMD_API_KEY` or commit `.env`. `PORT` is only needed locally and should be omitted from Netlify. Prices are optional and may be left unset. `APP_ORIGIN` is optional for an additional exact public origin. Requests from the deployed site's own origin are accepted automatically, including deploy previews.
+
+Push the new configuration and function files to the connected repository, then deploy that commit. After deployment, open `/api/status`. It should return JSON with `configured: true` before testing ad creation. A 404 means the function or root configuration is missing from the published commit. A 503 means required runtime environment variables are missing. A 502 reports an AMD request or plan error rather than a missing route.
+
+Netlify synchronous functions have a 60-second execution limit. This adapter caps each AMD attempt at 25 seconds, including up to one plan repair, and advertises a shorter browser timeout through `/api/status`. Longer AMD timeouts remain available when running the Express server on a host that supports them. The two-request concurrency guard applies per function instance, not globally across Netlify. Normal AMD account quotas still apply.
+
+References: [Netlify Functions](https://docs.netlify.com/build/functions/overview/), [function execution limits](https://docs.netlify.com/build/functions/configuration/), [runtime environment variables](https://docs.netlify.com/build/functions/environment-variables/).
+
 ## Container packaging
 
 A Dockerfile is provided. `.env` and local build files are excluded from the build context; credentials must be supplied at runtime.
@@ -96,3 +108,4 @@ Demonstrate at least two real customer stories using the same brand, showing how
 Before submitting, publish the authorized repository and working app, check event eligibility and license requirements, and prepare the pitch/demo video. These are submission tasks, not automatic actions of this app.
 
 Changing **Your story** or **Ad preferences** creates an unapplied draft. The app marks the visible ad as the previous version and offers **Create updated ad**. A new AMD request applies the story and preferences; typing does not silently regenerate or overwrite saved ads. Applied time, energy and duration are displayed above the player.
+
